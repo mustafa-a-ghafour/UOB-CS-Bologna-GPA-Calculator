@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl" class="light-mode">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>حاسبة معدل قسم علوم الحاسوب - جامعة بغداد وفق نظام بولونيا</title>
+  
+  <!-- Favicon SVG (Custom Graduation Cap + Code Brackets) -->
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%234f46e5' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 2L2 7l10 5 10-5-10-5z'/%3E%3Cpath d='M6 10v5c0 1.5 1.5 2.5 6 2.5s6-1 6-2.5v-5'/%3E%3Cpath d='M9 13.5L7.5 15l1.5 1.5'/%3E%3Cpath d='M15 13.5l1.5 1.5-1.5 1.5'/%3E%3C/svg%3E">
+
+  <!-- Google Fonts - Cairo -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800;900&display=swap"
+    rel="stylesheet">
+
+  <!-- Local Styles -->
+  <link rel="stylesheet" href="assets/style.css">
+</head>
+
+<body>
+  <div class="app-container">
+    <!-- Header -->
+    <header class="app-header">
+      <div class="header-main">
+        <div class="logo-area">
+          <div class="logo-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+              stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
+              <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
+            </svg>
+          </div>
+          <div class="title-meta">
+            <h1>مسار بولونيا</h1>
+          </div>
+        </div>
+
+        <div class="header-actions">
+          <!-- Theme Toggle -->
+          <button id="theme-toggle" class="btn-icon" aria-label="تبديل المظهر">
+            <span class="theme-icon sun-icon">
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="4"></circle>
+                <path
+                  d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41">
+                </path>
+              </svg>
+            </span>
+            <span class="theme-icon moon-icon">
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"></path>
+              </svg>
+            </span>
+          </button>
+        </div>
+      </div>
+
+      <div class="header-description">
+        <h2>حاسبة معدل قسم علوم الحاسوب - جامعة بغداد وفق نظام بولونيا</h2>
+      </div>
+
+    </header>
+
+    <!-- Main Content Area -->
+    <main class="app-content">
+      <!-- Stage Selector container (Top Right in RTL) -->
+      <div class="stage-selector-container">
+        <label for="stage-select" class="stage-select-label">المرحلة الدراسية:</label>
+        <div class="stage-select-wrapper">
+          <select id="stage-select" class="stage-select-menu">
+            <option value="stage1">المرحلة الأولى</option>
+            <option value="stage2">المرحلة الثانية</option>
+            <option value="stage3">المرحلة الثالثة</option>
+            <option value="stage4">المرحلة الرابعة</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Semester Grid -->
+      <div class="semesters-grid">
+        <!-- Semester 1 Column -->
+        <section class="semester-column" id="semester-1-section">
+          <div class="semester-header">
+            <div class="semester-title-group">
+              <span class="semester-tag">الكورس الأول</span>
+              <h3>الفصل الدراسي الأول</h3>
+            </div>
+            <span class="credits-count" id="s1-total-credits-display">0 وحدة</span>
+          </div>
+          <div class="subjects-list" id="semester1-subjects">
+            <!-- Dynamic Subjects Rendered Here -->
+          </div>
+        </section>
+
+        <!-- Semester 2 Column -->
+        <section class="semester-column" id="semester-2-section">
+          <div class="semester-header">
+            <div class="semester-title-group">
+              <span class="semester-tag">الكورس الثاني</span>
+              <h3>الفصل الدراسي الثاني</h3>
+            </div>
+            <span class="credits-count" id="s2-total-credits-display">0 وحدة</span>
+          </div>
+          <div class="subjects-list" id="semester2-subjects">
+            <!-- Dynamic Subjects Rendered Here -->
+          </div>
+        </section>
+      </div>
+
+      <!-- Summary Dashboard -->
+      <section class="summary-dashboard">
+        <h3 class="dashboard-title">لوحة ملخص المعدلات (المرحلة الحالية)</h3>
+
+        <div class="summary-cards-container">
+          <!-- Semester 1 Card -->
+          <div class="summary-card" id="s1-summary-card">
+            <div class="card-glow"></div>
+            <div class="summary-card-header">
+              <div class="icon-wrap">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
+                  stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path>
+                  <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path>
+                </svg>
+              </div>
+              <h4>الكورس الأول</h4>
+            </div>
+            <div class="gpa-display">
+              <div class="gpa-val expected">
+                <span class="gpa-num" id="s1-gpa-avg">-.-</span>
+                <span class="gpa-label">المتوسط</span>
+              </div>
+              <div class="gpa-range-row">
+                <div class="gpa-val min">
+                  <span class="gpa-num-small" id="s1-gpa-min">-.-</span>
+                  <span class="gpa-label-small">الحد الأدنى</span>
+                </div>
+                <div class="gpa-val max">
+                  <span class="gpa-num-small" id="s1-gpa-max">-.-</span>
+                  <span class="gpa-label-small">الحد الأقصى</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Semester 2 Card -->
+          <div class="summary-card" id="s2-summary-card">
+            <div class="card-glow"></div>
+            <div class="summary-card-header">
+              <div class="icon-wrap">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
+                  stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path>
+                  <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path>
+                </svg>
+              </div>
+              <h4>الكورس الثاني</h4>
+            </div>
+            <div class="gpa-display">
+              <div class="gpa-val expected">
+                <span class="gpa-num" id="s2-gpa-avg">-.-</span>
+                <span class="gpa-label">المتوسط</span>
+              </div>
+              <div class="gpa-range-row">
+                <div class="gpa-val min">
+                  <span class="gpa-num-small" id="s2-gpa-min">-.-</span>
+                  <span class="gpa-label-small">الحد الأدنى</span>
+                </div>
+                <div class="gpa-val max">
+                  <span class="gpa-num-small" id="s2-gpa-max">-.-</span>
+                  <span class="gpa-label-small">الحد الأقصى</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Cumulative Stage Card -->
+          <div class="summary-card cumulative" id="cumulative-summary-card">
+            <div class="card-glow"></div>
+            <div class="summary-card-header">
+              <div class="icon-wrap animate-pulse">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
+                  stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path
+                    d="M21.42 10.922a1 1 0 0 0-.019-1.838L12.83 5.18a2 2 0 0 0-1.66 0L2.6 9.08a1 1 0 0 0 0 1.832l8.57 3.908a2 2 0 0 0 1.66 0z" />
+                  <path d="M6 12v5c0 2 2 3 6 3s6-1 6-3v-5" />
+                </svg>
+              </div>
+              <h4>المعدل التراكمي للمرحلة</h4>
+            </div>
+            <div class="gpa-display">
+              <div class="gpa-val expected">
+                <span class="gpa-num text-gradient" id="cumulative-gpa-avg">-.-</span>
+                <span class="gpa-label">المعدل التراكمي المتوسط</span>
+              </div>
+              <div class="gpa-range-row">
+                <div class="gpa-val min">
+                  <span class="gpa-num-small" id="cumulative-gpa-min">-.-</span>
+                  <span class="gpa-label-small">الأدنى التراكمي</span>
+                </div>
+                <div class="gpa-val max">
+                  <span class="gpa-num-small" id="cumulative-gpa-max">-.-</span>
+                  <span class="gpa-label-small">الأقصى التراكمي</span>
+                </div>
+              </div>
+            </div>
+            <div class="cumulative-meta">
+              <span id="cumulative-credits-ratio">0 من أصل 60 وحدة</span>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+  </div>
+
+  <!-- Footer -->
+  <footer class="app-footer-info">
+    <p>إعداد: مصطفى احمد غفور</p>
+  </footer>
+
+  <!-- Local Script -->
+  <script src="assets/script.js"></script>
+</body>
+
+</html>

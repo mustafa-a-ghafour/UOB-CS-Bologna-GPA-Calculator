@@ -1,0 +1,396 @@
+// Curriculum Data Structure
+const curriculum = {
+  stage1: {
+    name: "المرحلة الأولى",
+    semester1: [
+      { name: "اساسيات البرمجة 1", credits: 8 },
+      { name: "تركيب الحاسوب", credits: 7 },
+      { name: "مقدمة الى علم الحاسوب", credits: 5 },
+      { name: "حساب التفاضل و التكامل", credits: 6 },
+      { name: "اللغة الانكليزية 1", credits: 2 },
+      { name: "الديمقراطية و حقوق الانسان", credits: 2 }
+    ],
+    semester2: [
+      { name: "اساسيات البرمجة 2", credits: 8 },
+      { name: "هياكل متقطعة", credits: 6 },
+      { name: "المنطق الرقمي", credits: 7 },
+      { name: "مهارات الكتابة الاكاديمية", credits: 5 },
+      { name: "الاحتمالية و الاحصاء", credits: 2 },
+      { name: "اللغة العربية 1", credits: 2 }
+    ]
+  },
+  stage2: {
+    name: "المرحلة الثانية",
+    semester1: [
+      { name: "هياكل بيانات", credits: 6 },
+      { name: "برمجة كيانية", credits: 6 },
+      { name: "طرائق عددية", credits: 5 },
+      { name: "النظرية الاحتسابية", credits: 5 },
+      { name: "برمجة مرئية", credits: 6 },
+      { name: "اللغة الانكليزية 2", credits: 2 }
+    ],
+    semester2: [
+      { name: "تصميم و تحليل الخوارزميات", credits: 7 },
+      { name: "لغة للأغراض العامة", credits: 7 },
+      { name: "مترجمات", credits: 6 },
+      { name: "تصميم و برمجة الويب", credits: 6 },
+      { name: "اللغة العربية 2", credits: 2 },
+      { name: "جرائم نظام البعث في العراق", credits: 2 }
+    ]
+  },
+  stage3: {
+    name: "المرحلة الثالثة",
+    semester1: [
+      { name: "ذكاء اصطناعي", credits: 6 },
+      { name: "شبكات الحاسوب", credits: 6 },
+      { name: "امن الحاسوب", credits: 5 },
+      { name: "تطوير تطبيقات الويب", credits: 5 },
+      { name: "هندسة برمجيات", credits: 4 },
+      { name: "معمارية الحاسوب", credits: 4 }
+    ],
+    semester2: [
+      { name: "تطوير تطبيقات النقال", credits: 6 },
+      { name: "رسوم الحاسوب", credits: 6 },
+      { name: "تعلم الألة", credits: 6 },
+      { name: "أساسيات أنظمة قواعد البيانات", credits: 6 },
+      { name: "تشفير", credits: 5 },
+      { name: "منهجية البحث العلمي", credits: 1 }
+    ]
+  },
+  stage4: {
+    name: "المرحلة الرابعة",
+    semester1: [
+      { name: "معالجة الصور الرقمية", credits: 6 },
+      { name: "أنظمة إدارة قواعد البيانات", credits: 6 },
+      { name: "مقدمة الى انترنيت الأشياء", credits: 4 },
+      { name: "نظم تشغيل", credits: 6 },
+      { name: "استرجاع المعلومات", credits: 5 },
+      { name: "مشروع بحث 1", credits: 3 }
+    ],
+    semester2: [
+      { name: "تنقيب بيانات", credits: 6 },
+      { name: "امن سيبراني", credits: 6 },
+      { name: "مقدمة الى الروبوتات", credits: 5 },
+      { name: "وسائط متعددة", credits: 6 },
+      { name: "حوسبة متوازية و توزيعية", credits: 4 },
+      { name: "مشروع بحث 2", credits: 3 }
+    ]
+  }
+};
+
+// Grading Scales Mapping
+const gradeScale = {
+  "امتياز": { name: "امتياز", min: 90, max: 100, avg: 95 },
+  "جيد جداً": { name: "جيد جداً", min: 80, max: 89, avg: 84.5 },
+  "جيد": { name: "جيد", min: 70, max: 79, avg: 74.5 },
+  "متوسط": { name: "متوسط", min: 60, max: 69, avg: 64.5 },
+  "مقبول": { name: "مقبول", min: 50, max: 59, avg: 54.5 },
+  "ناجح بقيد المعالجة": { name: "ناجح بقيد المعالجة", min: 50, max: 50, avg: 50 }
+};
+
+// Global App State
+let activeStage = "stage1";
+let selectedGrades = {
+  stage1: { semester1: {}, semester2: {} },
+  stage2: { semester1: {}, semester2: {} },
+  stage3: { semester1: {}, semester2: {} },
+  stage4: { semester1: {}, semester2: {} }
+};
+
+// Load data from LocalStorage if exists
+function loadStateFromLocalStorage() {
+  // Clean up any previously saved grades to start fresh on reload
+  localStorage.removeItem("bologna_gpa_grades");
+  
+  const savedStage = localStorage.getItem("bologna_gpa_active_stage");
+  if (savedStage && curriculum[savedStage]) {
+    activeStage = savedStage;
+  }
+}
+
+// Save state to LocalStorage
+function saveStateToLocalStorage() {
+  localStorage.setItem("bologna_gpa_active_stage", activeStage);
+}
+
+// Initialize UI
+document.addEventListener("DOMContentLoaded", () => {
+  loadStateFromLocalStorage();
+  initializeTheme();
+  renderStageSelector();
+  renderStage(activeStage);
+  setupThemeToggle();
+});
+
+// Theme Management
+function initializeTheme() {
+  const savedTheme = localStorage.getItem("bologna_gpa_theme") || "light-mode";
+  document.documentElement.className = savedTheme;
+}
+
+function setupThemeToggle() {
+  const themeToggleBtn = document.getElementById("theme-toggle");
+  themeToggleBtn.addEventListener("click", () => {
+    const isDark = document.documentElement.classList.contains("dark-mode");
+    const newTheme = isDark ? "light-mode" : "dark-mode";
+    document.documentElement.className = newTheme;
+    localStorage.setItem("bologna_gpa_theme", newTheme);
+  });
+}
+
+// Stage Selector rendering and handlers
+function renderStageSelector() {
+  const select = document.getElementById("stage-select");
+  if (!select) return;
+  
+  // Set current selected stage from state
+  select.value = activeStage;
+  
+  // Listen to changes to dynamically render stage
+  select.addEventListener("change", (e) => {
+    activeStage = e.target.value;
+    saveStateToLocalStorage();
+    renderStage(activeStage);
+  });
+}
+
+// Render dynamic subjects for both semesters
+function renderStage(stageKey) {
+  const stageData = curriculum[stageKey];
+  if (!stageData) return;
+  
+  const sem1List = document.getElementById("semester1-subjects");
+  const sem2List = document.getElementById("semester2-subjects");
+  
+  sem1List.innerHTML = "";
+  sem2List.innerHTML = "";
+  
+  // Display total semester credits statically first
+  const s1TotalCredits = stageData.semester1.reduce((sum, s) => sum + s.credits, 0);
+  const s2TotalCredits = stageData.semester2.reduce((sum, s) => sum + s.credits, 0);
+  
+  document.getElementById("s1-total-credits-display").textContent = getCreditsLabel(s1TotalCredits);
+  document.getElementById("s2-total-credits-display").textContent = getCreditsLabel(s2TotalCredits);
+  
+  // Render Semester 1 subjects
+  stageData.semester1.forEach((subject, index) => {
+    sem1List.appendChild(createSubjectCard(subject, "semester1", index));
+  });
+  
+  // Render Semester 2 subjects
+  stageData.semester2.forEach((subject, index) => {
+    sem2List.appendChild(createSubjectCard(subject, "semester2", index));
+  });
+  
+  // Compute & Render GPAs
+  calculateGPAs();
+}
+
+// Helper to create individual subject card HTML element
+function createSubjectCard(subject, semesterKey, index) {
+  const card = document.createElement("div");
+  card.className = "subject-card";
+  
+  const savedGrade = selectedGrades[activeStage][semesterKey][subject.name] || "";
+  if (savedGrade) {
+    card.classList.add("has-grade");
+  }
+  
+  // Create card info section
+  const infoDiv = document.createElement("div");
+  infoDiv.className = "subject-info";
+  
+  const nameSpan = document.createElement("span");
+  nameSpan.className = "subject-name";
+  nameSpan.textContent = subject.name;
+  
+  const creditsSpan = document.createElement("span");
+  creditsSpan.className = "subject-credits";
+  creditsSpan.innerHTML = `عدد الوحدات: <span class="subject-credits-badge">${getCreditsLabel(subject.credits)}</span>`;
+  
+  infoDiv.appendChild(nameSpan);
+  infoDiv.appendChild(creditsSpan);
+  
+  // Create grade selection select dropdown
+  const selectWrapper = document.createElement("div");
+  selectWrapper.className = "grade-select-wrapper";
+  
+  const select = document.createElement("select");
+  select.className = "grade-select";
+  select.setAttribute("aria-label", `تقدير مادة ${subject.name}`);
+  
+  // Add placeholder option
+  const placeholderOpt = document.createElement("option");
+  placeholderOpt.value = "";
+  placeholderOpt.textContent = "اختر التقدير";
+  select.appendChild(placeholderOpt);
+  
+  // Populate grades
+  Object.keys(gradeScale).forEach(gradeKey => {
+    const scale = gradeScale[gradeKey];
+    const opt = document.createElement("option");
+    opt.value = gradeKey;
+    
+    // Different text formatting based on conditional pass or range scale
+    if (scale.min === scale.max) {
+      opt.textContent = `${scale.name} (${scale.min})`;
+    } else {
+      opt.textContent = `${scale.name} (${scale.min}-${scale.max})`;
+    }
+    
+    if (savedGrade === gradeKey) {
+      opt.selected = true;
+    }
+    
+    select.appendChild(opt);
+  });
+  
+  // Event listener for real-time update
+  select.addEventListener("change", (e) => {
+    const value = e.target.value;
+    if (value) {
+      selectedGrades[activeStage][semesterKey][subject.name] = value;
+      card.classList.add("has-grade");
+    } else {
+      delete selectedGrades[activeStage][semesterKey][subject.name];
+      card.classList.remove("has-grade");
+    }
+    
+    saveStateToLocalStorage();
+    calculateGPAs();
+  });
+  
+  selectWrapper.appendChild(select);
+  card.appendChild(infoDiv);
+  card.appendChild(selectWrapper);
+  
+  return card;
+}
+
+// Calculate and render all GPAs (Min, Max, Avg)
+function calculateGPAs() {
+  const stageData = curriculum[activeStage];
+  if (!stageData) return;
+  
+  // Calculate Semester 1
+  const s1GPA = calculateSemesterGPA(stageData.semester1, "semester1");
+  updateGPADisplay("s1", s1GPA);
+  
+  // Calculate Semester 2
+  const s2GPA = calculateSemesterGPA(stageData.semester2, "semester2");
+  updateGPADisplay("s2", s2GPA);
+  
+  // Calculate Cumulative Stage
+  const cumulativeGPA = calculateCumulativeGPA(stageData);
+  updateGPADisplay("cumulative", cumulativeGPA);
+  
+  // Update cumulative metadata ratio
+  const totalStageCredits = 60;
+  const gradedCredits = (s1GPA.gradedCredits || 0) + (s2GPA.gradedCredits || 0);
+  document.getElementById("cumulative-credits-ratio").textContent = 
+    `${getCreditsLabel(gradedCredits)} من أصل ${getCreditsLabel(totalStageCredits)} تم اختيارها`;
+}
+
+// Calculate GPA for a specific semester
+function calculateSemesterGPA(subjects, semesterKey) {
+  let weightedMin = 0;
+  let weightedMax = 0;
+  let weightedAvg = 0;
+  let gradedCredits = 0;
+  
+  subjects.forEach(subject => {
+    const gradeKey = selectedGrades[activeStage][semesterKey][subject.name];
+    if (gradeKey && gradeScale[gradeKey]) {
+      const scale = gradeScale[gradeKey];
+      weightedMin += scale.min * subject.credits;
+      weightedMax += scale.max * subject.credits;
+      weightedAvg += scale.avg * subject.credits;
+      gradedCredits += subject.credits;
+    }
+  });
+  
+  if (gradedCredits === 0) {
+    return { min: null, max: null, avg: null, gradedCredits: 0 };
+  }
+  
+  return {
+    min: (weightedMin / gradedCredits).toFixed(2),
+    max: (weightedMax / gradedCredits).toFixed(2),
+    avg: (weightedAvg / gradedCredits).toFixed(2),
+    gradedCredits: gradedCredits
+  };
+}
+
+// Calculate Cumulative Stage GPA (Semester 1 + Semester 2)
+function calculateCumulativeGPA(stageData) {
+  let weightedMin = 0;
+  let weightedMax = 0;
+  let weightedAvg = 0;
+  let gradedCredits = 0;
+  
+  // Sem 1
+  stageData.semester1.forEach(subject => {
+    const gradeKey = selectedGrades[activeStage]["semester1"][subject.name];
+    if (gradeKey && gradeScale[gradeKey]) {
+      const scale = gradeScale[gradeKey];
+      weightedMin += scale.min * subject.credits;
+      weightedMax += scale.max * subject.credits;
+      weightedAvg += scale.avg * subject.credits;
+      gradedCredits += subject.credits;
+    }
+  });
+  
+  // Sem 2
+  stageData.semester2.forEach(subject => {
+    const gradeKey = selectedGrades[activeStage]["semester2"][subject.name];
+    if (gradeKey && gradeScale[gradeKey]) {
+      const scale = gradeScale[gradeKey];
+      weightedMin += scale.min * subject.credits;
+      weightedMax += scale.max * subject.credits;
+      weightedAvg += scale.avg * subject.credits;
+      gradedCredits += subject.credits;
+    }
+  });
+  
+  if (gradedCredits === 0) {
+    return { min: null, max: null, avg: null, gradedCredits: 0 };
+  }
+  
+  return {
+    min: (weightedMin / gradedCredits).toFixed(2),
+    max: (weightedMax / gradedCredits).toFixed(2),
+    avg: (weightedAvg / gradedCredits).toFixed(2),
+    gradedCredits: gradedCredits
+  };
+}
+
+// Helper to update HTML display for GPA
+function updateGPADisplay(prefix, gpaObject) {
+  const avgEl = document.getElementById(`${prefix}-gpa-avg`);
+  const minEl = document.getElementById(`${prefix}-gpa-min`);
+  const maxEl = document.getElementById(`${prefix}-gpa-max`);
+  
+  if (gpaObject.avg === null) {
+    avgEl.textContent = "-.-";
+    minEl.textContent = "-.-";
+    maxEl.textContent = "-.-";
+  } else {
+    avgEl.textContent = gpaObject.avg;
+    minEl.textContent = gpaObject.min;
+    maxEl.textContent = gpaObject.max;
+  }
+}
+
+// Arabic grammatically correct credits formatter (العدد والمعدود)
+function getCreditsLabel(count) {
+  if (count === 1) {
+    return "وحدة واحدة";
+  }
+  if (count === 2) {
+    return "وحدتين";
+  }
+  if (count >= 3 && count <= 10) {
+    return `${count} وحدات`;
+  }
+  return `${count} وحدة`;
+}
