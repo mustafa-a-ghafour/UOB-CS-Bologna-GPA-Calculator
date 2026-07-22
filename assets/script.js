@@ -91,6 +91,7 @@ const gradeScale = {
 // Global App State
 let activeStage = "stage1";
 let isPreciseMode = false;
+let isCumulativeAllStages = false;
 let selectedGrades = {
   stage1: { semester1: {}, semester2: {} },
   stage2: { semester1: {}, semester2: {} },
@@ -112,12 +113,18 @@ function loadStateFromLocalStorage() {
   if (savedPreciseMode !== null) {
     isPreciseMode = savedPreciseMode === "true";
   }
+  
+  const savedScope = localStorage.getItem("bologna_gpa_cumulative_all_stages");
+  if (savedScope !== null) {
+    isCumulativeAllStages = savedScope === "true";
+  }
 }
 
 // Save state to LocalStorage
 function saveStateToLocalStorage() {
   localStorage.setItem("bologna_gpa_active_stage", activeStage);
   localStorage.setItem("bologna_gpa_precise_mode", isPreciseMode);
+  localStorage.setItem("bologna_gpa_cumulative_all_stages", isCumulativeAllStages);
 }
 
 // Initialize UI
@@ -125,6 +132,7 @@ document.addEventListener("DOMContentLoaded", () => {
   loadStateFromLocalStorage();
   initializeTheme();
   setupPreciseToggle();
+  setupScopeToggle();
   renderStageSelector();
   renderStage(activeStage);
   setupThemeToggle();
@@ -142,6 +150,20 @@ function setupPreciseToggle() {
     isPreciseMode = e.target.checked;
     document.body.classList.toggle("precise-mode-active", isPreciseMode);
     convertGradesMode(isPreciseMode);
+    saveStateToLocalStorage();
+    renderStage(activeStage);
+  });
+}
+
+// Scope Toggle Setup
+function setupScopeToggle() {
+  const toggle = document.getElementById("scope-toggle");
+  if (!toggle) return;
+  
+  toggle.checked = isCumulativeAllStages;
+  
+  toggle.addEventListener("change", (e) => {
+    isCumulativeAllStages = e.target.checked;
     saveStateToLocalStorage();
     renderStage(activeStage);
   });
@@ -217,42 +239,117 @@ function renderStageSelector() {
 
 // Render dynamic subjects for both semesters
 function renderStage(stageKey) {
-  const stageData = curriculum[stageKey];
-  if (!stageData) return;
-  
   const sem1List = document.getElementById("semester1-subjects");
   const sem2List = document.getElementById("semester2-subjects");
+  const semestersGrid = document.querySelector(".semesters-grid");
+  const allStagesContainer = document.getElementById("all-stages-container");
+  const selectorContainer = document.querySelector(".stage-selector-container");
   
-  sem1List.innerHTML = "";
-  sem2List.innerHTML = "";
-  
-  // Display total semester credits statically first
-  const s1TotalCredits = stageData.semester1.reduce((sum, s) => sum + s.credits, 0);
-  const s2TotalCredits = stageData.semester2.reduce((sum, s) => sum + s.credits, 0);
-  
-  document.getElementById("s1-total-credits-display").textContent = getCreditsLabel(s1TotalCredits);
-  document.getElementById("s2-total-credits-display").textContent = getCreditsLabel(s2TotalCredits);
-  
-  // Render Semester 1 subjects
-  stageData.semester1.forEach((subject, index) => {
-    sem1List.appendChild(createSubjectCard(subject, "semester1", index));
-  });
-  
-  // Render Semester 2 subjects
-  stageData.semester2.forEach((subject, index) => {
-    sem2List.appendChild(createSubjectCard(subject, "semester2", index));
-  });
+  if (isCumulativeAllStages) {
+    // Hide Stage Selector and Single Stage Grid
+    if (selectorContainer) selectorContainer.style.display = "none";
+    if (semestersGrid) semestersGrid.style.display = "none";
+    if (allStagesContainer) {
+      allStagesContainer.style.display = "flex";
+      allStagesContainer.innerHTML = "";
+    }
+    
+    // Render subjects for all stages grouped by stage rows
+    for (const key in curriculum) {
+      const stageName = curriculum[key].name;
+      
+      // Calculate total credits for this stage
+      const s1Credits = curriculum[key].semester1.reduce((sum, s) => sum + s.credits, 0);
+      const s2Credits = curriculum[key].semester2.reduce((sum, s) => sum + s.credits, 0);
+      
+      const stageRow = document.createElement("div");
+      stageRow.className = "stage-row";
+      
+      // Stage title
+      const stageTitle = document.createElement("h3");
+      stageTitle.className = "stage-row-title";
+      stageTitle.textContent = stageName;
+      stageRow.appendChild(stageTitle);
+      
+      // Columns grid
+      const columnsGrid = document.createElement("div");
+      columnsGrid.className = "stage-row-columns";
+      
+      // Semester 1 Column
+      const col1 = document.createElement("div");
+      col1.className = "stage-row-column";
+      const col1Header = document.createElement("div");
+      col1Header.className = "stage-row-column-header";
+      col1Header.textContent = `الكورس الأول (${getCreditsLabel(s1Credits)})`;
+      col1.appendChild(col1Header);
+      const list1 = document.createElement("div");
+      list1.className = "subjects-list";
+      curriculum[key].semester1.forEach((subject, index) => {
+        list1.appendChild(createSubjectCard(subject, "semester1", index, key));
+      });
+      col1.appendChild(list1);
+      
+      // Semester 2 Column
+      const col2 = document.createElement("div");
+      col2.className = "stage-row-column";
+      const col2Header = document.createElement("div");
+      col2Header.className = "stage-row-column-header";
+      col2Header.textContent = `الكورس الثاني (${getCreditsLabel(s2Credits)})`;
+      col2.appendChild(col2Header);
+      const list2 = document.createElement("div");
+      list2.className = "subjects-list";
+      curriculum[key].semester2.forEach((subject, index) => {
+        list2.appendChild(createSubjectCard(subject, "semester2", index, key));
+      });
+      col2.appendChild(list2);
+      
+      columnsGrid.appendChild(col1);
+      columnsGrid.appendChild(col2);
+      stageRow.appendChild(columnsGrid);
+      
+      if (allStagesContainer) {
+        allStagesContainer.appendChild(stageRow);
+      }
+    }
+  } else {
+    // Show Stage Selector and Single Stage Grid
+    if (selectorContainer) selectorContainer.style.display = "flex";
+    if (semestersGrid) semestersGrid.style.display = "";
+    if (allStagesContainer) allStagesContainer.style.display = "none";
+    
+    sem1List.innerHTML = "";
+    sem2List.innerHTML = "";
+    
+    const stageData = curriculum[stageKey];
+    if (!stageData) return;
+    
+    const s1TotalCredits = stageData.semester1.reduce((sum, s) => sum + s.credits, 0);
+    const s2TotalCredits = stageData.semester2.reduce((sum, s) => sum + s.credits, 0);
+    
+    document.getElementById("s1-total-credits-display").textContent = getCreditsLabel(s1TotalCredits);
+    document.getElementById("s2-total-credits-display").textContent = getCreditsLabel(s2TotalCredits);
+    
+    // Render Semester 1 subjects
+    stageData.semester1.forEach((subject, index) => {
+      sem1List.appendChild(createSubjectCard(subject, "semester1", index, stageKey));
+    });
+    
+    // Render Semester 2 subjects
+    stageData.semester2.forEach((subject, index) => {
+      sem2List.appendChild(createSubjectCard(subject, "semester2", index, stageKey));
+    });
+  }
   
   // Compute & Render GPAs
   calculateGPAs();
 }
 
 // Helper to create individual subject card HTML element
-function createSubjectCard(subject, semesterKey, index) {
+function createSubjectCard(subject, semesterKey, index, stageKey) {
   const card = document.createElement("div");
   card.className = "subject-card";
   
-  const savedGrade = selectedGrades[activeStage][semesterKey][subject.name];
+  const savedGrade = selectedGrades[stageKey][semesterKey][subject.name];
   const hasGrade = savedGrade !== undefined && savedGrade !== null && savedGrade !== "";
   if (hasGrade) {
     card.classList.add("has-grade");
@@ -295,17 +392,17 @@ function createSubjectCard(subject, semesterKey, index) {
       let val = e.target.value;
       if (val === "") {
         input.classList.remove("is-invalid");
-        delete selectedGrades[activeStage][semesterKey][subject.name];
+        delete selectedGrades[stageKey][semesterKey][subject.name];
         card.classList.remove("has-grade");
       } else {
         let numVal = parseFloat(val);
         if (isNaN(numVal) || numVal < 50 || numVal > 100) {
           input.classList.add("is-invalid");
-          delete selectedGrades[activeStage][semesterKey][subject.name];
+          delete selectedGrades[stageKey][semesterKey][subject.name];
           card.classList.remove("has-grade");
         } else {
           input.classList.remove("is-invalid");
-          selectedGrades[activeStage][semesterKey][subject.name] = numVal;
+          selectedGrades[stageKey][semesterKey][subject.name] = numVal;
           card.classList.add("has-grade");
         }
       }
@@ -355,10 +452,10 @@ function createSubjectCard(subject, semesterKey, index) {
     select.addEventListener("change", (e) => {
       const value = e.target.value;
       if (value) {
-        selectedGrades[activeStage][semesterKey][subject.name] = value;
+        selectedGrades[stageKey][semesterKey][subject.name] = value;
         card.classList.add("has-grade");
       } else {
-        delete selectedGrades[activeStage][semesterKey][subject.name];
+        delete selectedGrades[stageKey][semesterKey][subject.name];
         card.classList.remove("has-grade");
       }
       
@@ -376,56 +473,80 @@ function createSubjectCard(subject, semesterKey, index) {
 
 // Calculate and render all GPAs (Min, Max, Avg)
 function calculateGPAs() {
-  const stageData = curriculum[activeStage];
-  if (!stageData) return;
-  
-  // Calculate Semester 1
-  const s1GPA = calculateSemesterGPA(stageData.semester1, "semester1");
-  updateGPADisplay("s1", s1GPA);
-  
-  // Calculate Semester 2
-  const s2GPA = calculateSemesterGPA(stageData.semester2, "semester2");
-  updateGPADisplay("s2", s2GPA);
-  
-  // Calculate Cumulative Stage
-  const cumulativeGPA = calculateCumulativeGPA(stageData);
-  updateGPADisplay("cumulative", cumulativeGPA);
-  
-  // Update cumulative metadata ratio
-  const totalStageCredits = 60;
-  const gradedCredits = (s1GPA.gradedCredits || 0) + (s2GPA.gradedCredits || 0);
-  document.getElementById("cumulative-credits-ratio").textContent = 
-    `${getCreditsLabel(gradedCredits)} من أصل ${getCreditsLabel(totalStageCredits)} تم اختيارها`;
+  const dbTitle = document.querySelector(".dashboard-title");
+  if (dbTitle) {
+    dbTitle.textContent = isCumulativeAllStages ? "لوحة ملخص المعدلات (جميع المراحل)" : "لوحة ملخص المعدلات (المرحلة الحالية)";
+  }
+
+  const dashboard = document.querySelector(".summary-dashboard");
+  if (dashboard) {
+    dashboard.classList.toggle("all-stages-active", isCumulativeAllStages);
+  }
+
+  if (isCumulativeAllStages) {
+    const s1GPA = calculateSemesterGPA("semester1");
+    updateGPADisplay("s1", s1GPA);
+    
+    const s2GPA = calculateSemesterGPA("semester2");
+    updateGPADisplay("s2", s2GPA);
+    
+    const cumulativeGPA = calculateCumulativeGPA();
+    updateGPADisplay("cumulative", cumulativeGPA);
+    
+    const totalStageCredits = 240;
+    const gradedCredits = (s1GPA.gradedCredits || 0) + (s2GPA.gradedCredits || 0);
+    document.getElementById("cumulative-credits-ratio").textContent = 
+      `${getCreditsLabel(gradedCredits)} من أصل ${getCreditsLabel(totalStageCredits)} تم اختيارها`;
+  } else {
+    const s1GPA = calculateSemesterGPA("semester1", activeStage);
+    updateGPADisplay("s1", s1GPA);
+    
+    const s2GPA = calculateSemesterGPA("semester2", activeStage);
+    updateGPADisplay("s2", s2GPA);
+    
+    const cumulativeGPA = calculateCumulativeGPA(activeStage);
+    updateGPADisplay("cumulative", cumulativeGPA);
+    
+    const totalStageCredits = 60;
+    const gradedCredits = (s1GPA.gradedCredits || 0) + (s2GPA.gradedCredits || 0);
+    document.getElementById("cumulative-credits-ratio").textContent = 
+      `${getCreditsLabel(gradedCredits)} من أصل ${getCreditsLabel(totalStageCredits)} تم اختيارها`;
+  }
 }
 
 // Calculate GPA for a specific semester
-function calculateSemesterGPA(subjects, semesterKey) {
+function calculateSemesterGPA(semesterKey, stageKey = null) {
   let weightedMin = 0;
   let weightedMax = 0;
   let weightedAvg = 0;
   let gradedCredits = 0;
   
-  subjects.forEach(subject => {
-    const val = selectedGrades[activeStage][semesterKey][subject.name];
-    if (val !== undefined && val !== null && val !== "") {
-      if (isPreciseMode) {
-        const grade = parseFloat(val);
-        if (!isNaN(grade) && grade >= 50 && grade <= 100) {
-          weightedMin += grade * subject.credits;
-          weightedMax += grade * subject.credits;
-          weightedAvg += grade * subject.credits;
-          gradedCredits += subject.credits;
-        }
-      } else {
-        if (gradeScale[val]) {
-          const scale = gradeScale[val];
-          weightedMin += scale.min * subject.credits;
-          weightedMax += scale.max * subject.credits;
-          weightedAvg += scale.avg * subject.credits;
-          gradedCredits += subject.credits;
+  const stagesToCalculate = stageKey ? [stageKey] : Object.keys(curriculum);
+  
+  stagesToCalculate.forEach(sKey => {
+    const subjects = curriculum[sKey][semesterKey];
+    subjects.forEach(subject => {
+      const val = selectedGrades[sKey][semesterKey][subject.name];
+      if (val !== undefined && val !== null && val !== "") {
+        if (isPreciseMode) {
+          const grade = parseFloat(val);
+          if (!isNaN(grade) && grade >= 50 && grade <= 100) {
+            weightedMin += grade * subject.credits;
+            weightedMax += grade * subject.credits;
+            weightedAvg += grade * subject.credits;
+            gradedCredits += subject.credits;
+          }
+        } else {
+          if (gradeScale[val]) {
+            const scale = gradeScale[val];
+            weightedMin += scale.min * subject.credits;
+            weightedMax += scale.max * subject.credits;
+            weightedAvg += scale.avg * subject.credits;
+            gradedCredits += subject.credits;
+          }
         }
       }
-    }
+    });
   });
   
   if (gradedCredits === 0) {
@@ -441,58 +562,62 @@ function calculateSemesterGPA(subjects, semesterKey) {
 }
 
 // Calculate Cumulative Stage GPA (Semester 1 + Semester 2)
-function calculateCumulativeGPA(stageData) {
+function calculateCumulativeGPA(stageKey = null) {
   let weightedMin = 0;
   let weightedMax = 0;
   let weightedAvg = 0;
   let gradedCredits = 0;
   
-  // Sem 1
-  stageData.semester1.forEach(subject => {
-    const val = selectedGrades[activeStage]["semester1"][subject.name];
-    if (val !== undefined && val !== null && val !== "") {
-      if (isPreciseMode) {
-        const grade = parseFloat(val);
-        if (!isNaN(grade) && grade >= 50 && grade <= 100) {
-          weightedMin += grade * subject.credits;
-          weightedMax += grade * subject.credits;
-          weightedAvg += grade * subject.credits;
-          gradedCredits += subject.credits;
-        }
-      } else {
-        if (gradeScale[val]) {
-          const scale = gradeScale[val];
-          weightedMin += scale.min * subject.credits;
-          weightedMax += scale.max * subject.credits;
-          weightedAvg += scale.avg * subject.credits;
-          gradedCredits += subject.credits;
-        }
-      }
-    }
-  });
+  const stagesToCalculate = stageKey ? [stageKey] : Object.keys(curriculum);
   
-  // Sem 2
-  stageData.semester2.forEach(subject => {
-    const val = selectedGrades[activeStage]["semester2"][subject.name];
-    if (val !== undefined && val !== null && val !== "") {
-      if (isPreciseMode) {
-        const grade = parseFloat(val);
-        if (!isNaN(grade) && grade >= 50 && grade <= 100) {
-          weightedMin += grade * subject.credits;
-          weightedMax += grade * subject.credits;
-          weightedAvg += grade * subject.credits;
-          gradedCredits += subject.credits;
-        }
-      } else {
-        if (gradeScale[val]) {
-          const scale = gradeScale[val];
-          weightedMin += scale.min * subject.credits;
-          weightedMax += scale.max * subject.credits;
-          weightedAvg += scale.avg * subject.credits;
-          gradedCredits += subject.credits;
+  stagesToCalculate.forEach(sKey => {
+    // Sem 1
+    curriculum[sKey].semester1.forEach(subject => {
+      const val = selectedGrades[sKey]["semester1"][subject.name];
+      if (val !== undefined && val !== null && val !== "") {
+        if (isPreciseMode) {
+          const grade = parseFloat(val);
+          if (!isNaN(grade) && grade >= 50 && grade <= 100) {
+            weightedMin += grade * subject.credits;
+            weightedMax += grade * subject.credits;
+            weightedAvg += grade * subject.credits;
+            gradedCredits += subject.credits;
+          }
+        } else {
+          if (gradeScale[val]) {
+            const scale = gradeScale[val];
+            weightedMin += scale.min * subject.credits;
+            weightedMax += scale.max * subject.credits;
+            weightedAvg += scale.avg * subject.credits;
+            gradedCredits += subject.credits;
+          }
         }
       }
-    }
+    });
+    
+    // Sem 2
+    curriculum[sKey].semester2.forEach(subject => {
+      const val = selectedGrades[sKey]["semester2"][subject.name];
+      if (val !== undefined && val !== null && val !== "") {
+        if (isPreciseMode) {
+          const grade = parseFloat(val);
+          if (!isNaN(grade) && grade >= 50 && grade <= 100) {
+            weightedMin += grade * subject.credits;
+            weightedMax += grade * subject.credits;
+            weightedAvg += grade * subject.credits;
+            gradedCredits += subject.credits;
+          }
+        } else {
+          if (gradeScale[val]) {
+            const scale = gradeScale[val];
+            weightedMin += scale.min * subject.credits;
+            weightedMax += scale.max * subject.credits;
+            weightedAvg += scale.avg * subject.credits;
+            gradedCredits += subject.credits;
+          }
+        }
+      }
+    });
   });
   
   if (gradedCredits === 0) {
@@ -523,15 +648,22 @@ function updateGPADisplay(prefix, gpaObject) {
     maxEl.textContent = gpaObject.max;
   }
   
-  // Update labels dynamically based on precise mode
+  // Update labels dynamically based on precise mode and cumulative mode
   const card = document.getElementById(prefix === "cumulative" ? "cumulative-summary-card" : `${prefix}-summary-card`);
   if (card) {
     const labelEl = card.querySelector(".gpa-label");
+    const headerEl = card.querySelector("h4");
     if (labelEl) {
-      if (isPreciseMode) {
-        labelEl.textContent = prefix === "cumulative" ? "المعدل التراكمي الدقيق" : "المعدل الدقيق";
+      if (prefix === "cumulative") {
+        if (isCumulativeAllStages) {
+          if (headerEl) headerEl.textContent = "المعدل التراكمي العام";
+          labelEl.textContent = isPreciseMode ? "المعدل التراكمي الدقيق" : "المعدل التراكمي المتوسط";
+        } else {
+          if (headerEl) headerEl.textContent = "المعدل التراكمي للمرحلة";
+          labelEl.textContent = isPreciseMode ? "المعدل التراكمي الدقيق" : "المعدل التراكمي المتوسط";
+        }
       } else {
-        labelEl.textContent = prefix === "cumulative" ? "المعدل التراكمي المتوسط" : "المتوسط";
+        labelEl.textContent = isPreciseMode ? "المعدل الدقيق" : "المتوسط";
       }
     }
   }

@@ -249,21 +249,75 @@ body {
   max-width: 600px;
 }
 
+/* Selectors Wrapper */
+.selectors-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  align-items: center;
+  width: 100%;
+  margin-bottom: 8px;
+}
+
+.toggles-row {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 32px;
+}
+
+/*.scope-selector-container, .system-selector-container alignment */
+.scope-selector-container,
+.system-selector-container {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.selector-label {
+  font-weight: 700;
+  font-size: 0.95rem;
+  color: var(--text-primary);
+  width: 130px;
+  display: inline-block;
+  white-space: nowrap;
+}
+
 /* Stage Selector Dropdown Layout */
 .stage-selector-container {
   display: flex;
   align-items: center;
   gap: 12px;
   align-self: flex-start;
-  /* Align to the right above Semester 1 */
-  margin-bottom: -8px;
-  /* Snug fit above the columns */
+}
+
+/* Stage Group Header for General Cumulative Mode */
+.stage-group-header {
+  font-size: 0.85rem;
+  font-weight: 800;
+  color: var(--primary-color);
+  background: var(--primary-glow);
+  padding: 6px 12px;
+  border-radius: var(--radius-sm);
+  margin-top: 16px;
+  margin-bottom: 4px;
+  text-align: right;
+  border-right: 3px solid var(--primary-color);
+}
+
+.stage-group-header:first-of-type {
+  margin-top: 0;
 }
 
 .stage-select-label {
   font-weight: 700;
   font-size: 0.95rem;
   color: var(--text-primary);
+  width: 130px;
+  display: inline-block;
+  white-space: nowrap;
 }
 
 .stage-select-wrapper {
@@ -766,7 +820,7 @@ body * {
 .compact-toggle {
   position: relative;
   display: inline-block;
-  width: 130px;
+  width: 150px;
   height: 38px;
   user-select: none;
   cursor: pointer;
@@ -816,8 +870,8 @@ body * {
   right: 4px;
 }
 
-#precise-toggle:checked ~ .compact-slider .compact-knob {
-  transform: translateX(-92px);
+.compact-toggle input:checked ~ .compact-slider .compact-knob {
+  transform: translateX(-112px);
 }
 
 .compact-text-estimate,
@@ -845,12 +899,12 @@ body * {
   transform: translateX(-15px);
 }
 
-#precise-toggle:checked ~ .compact-slider .compact-text-estimate {
+.compact-toggle input:checked ~ .compact-slider .compact-text-estimate {
   opacity: 0;
   transform: translateX(15px);
 }
 
-#precise-toggle:checked ~ .compact-slider .compact-text-precise {
+.compact-toggle input:checked ~ .compact-slider .compact-text-precise {
   opacity: 1;
   transform: translateX(0);
 }
@@ -874,6 +928,14 @@ body * {
   transition: all var(--transition-normal);
   text-align: center;
   direction: ltr; /* inputs of numbers look cleaner in LTR */
+  -moz-appearance: textfield; /* Hide spinners in Firefox */
+}
+
+/* Chrome, Safari, Edge, Opera: Hide outer and inner spin buttons */
+.grade-numeric-input::-webkit-outer-spin-button,
+.grade-numeric-input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
 }
 
 .grade-numeric-input:hover {
@@ -986,7 +1048,7 @@ body * {
     width: 28px;
     height: 28px;
   }
-  #precise-toggle:checked ~ .compact-slider .compact-knob {
+  .compact-toggle input:checked ~ .compact-slider .compact-knob {
     transform: translateX(-84px);
   }
   .compact-text-estimate,
@@ -994,4 +1056,127 @@ body * {
     font-size: 0.75rem;
     width: calc(100% - 36px);
   }
+
+  /* Responsive selectors */
+  .selectors-wrapper {
+    width: 100%;
+    align-self: stretch;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+  }
+  .toggles-row {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .scope-selector-container,
+  .system-selector-container,
+  .stage-selector-container {
+    width: 100%;
+    justify-content: space-between;
+  }
+  .selector-label,
+  .stage-select-label {
+    font-size: 0.85rem;
+    width: auto;
+    white-space: nowrap;
+  }
+
+  /* Responsive stages cumulative view */
+  .stage-row {
+    padding: 16px;
+  }
+  .stage-row-title {
+    font-size: 1.1rem;
+    margin-bottom: 16px;
+  }
+}
+
+/* All Stages Cumulative View styling */
+.all-stages-container {
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+}
+
+.stage-row {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  padding: 24px;
+  box-shadow: var(--shadow-sm);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+}
+
+.stage-row-title {
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: var(--primary-color);
+  margin-bottom: 20px;
+  padding-bottom: 8px;
+  border-bottom: 1px dashed var(--border-color);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.stage-row-title::before {
+  content: '';
+  display: inline-block;
+  width: 6px;
+  height: 18px;
+  background: var(--accent-gradient);
+  border-radius: 3px;
+}
+
+.stage-row-columns {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 24px;
+}
+
+@media (min-width: 992px) {
+  .stage-row-columns {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.stage-row-column {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.stage-row-column-header {
+  font-size: 0.95rem;
+  font-weight: 800;
+  color: var(--primary-color);
+  margin-bottom: 12px;
+  padding-bottom: 6px;
+  border-bottom: 1px dashed var(--border-color);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.stage-row-column-header::before {
+  content: '';
+  display: inline-block;
+  width: 4px;
+  height: 14px;
+  background: var(--accent-gradient);
+  border-radius: 2px;
+}
+
+/* All Stages Active Dashboard Styles */
+.all-stages-active #s1-summary-card,
+.all-stages-active #s2-summary-card {
+  display: none !important;
+}
+
+.all-stages-active .summary-cards-container {
+  grid-template-columns: 1fr !important;
 }

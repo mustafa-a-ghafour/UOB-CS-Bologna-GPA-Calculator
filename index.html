@@ -38,18 +38,6 @@
         </div>
 
         <div class="header-actions">
-          <!-- Mode Toggle Compact Control -->
-          <div class="precise-toggle-container">
-            <label class="compact-toggle" for="precise-toggle">
-              <input type="checkbox" id="precise-toggle">
-              <span class="compact-slider">
-                <span class="compact-knob"></span>
-                <span class="compact-text-estimate">معدل تقديري</span>
-                <span class="compact-text-precise">معدل دقيق</span>
-              </span>
-            </label>
-          </div>
-
           <!-- Theme Toggle -->
           <button id="theme-toggle" class="btn-icon" aria-label="تبديل المظهر">
             <span class="theme-icon sun-icon">
@@ -79,16 +67,48 @@
 
     <!-- Main Content Area -->
     <main class="app-content">
-      <!-- Stage Selector container (Top Right in RTL) -->
-      <div class="stage-selector-container">
-        <label for="stage-select" class="stage-select-label">المرحلة الدراسية:</label>
-        <div class="stage-select-wrapper">
-          <select id="stage-select" class="stage-select-menu">
-            <option value="stage1">المرحلة الأولى</option>
-            <option value="stage2">المرحلة الثانية</option>
-            <option value="stage3">المرحلة الثالثة</option>
-            <option value="stage4">المرحلة الرابعة</option>
-          </select>
+      <!-- Selectors Wrapper -->
+      <div class="selectors-wrapper">
+        <!-- Toggles Row -->
+        <div class="toggles-row">
+          <!-- Calculation System Selector -->
+          <div class="system-selector-container">
+            <span class="selector-label">نظام الحساب:</span>
+            <label class="compact-toggle" for="precise-toggle">
+              <input type="checkbox" id="precise-toggle">
+              <span class="compact-slider">
+                <span class="compact-knob"></span>
+                <span class="compact-text-estimate">معدل تقديري</span>
+                <span class="compact-text-precise">معدل دقيق</span>
+              </span>
+            </label>
+          </div>
+
+          <!-- Calculation Scope Selector -->
+          <div class="scope-selector-container">
+            <span class="selector-label">طريقة الحساب:</span>
+            <label class="compact-toggle" for="scope-toggle">
+              <input type="checkbox" id="scope-toggle">
+              <span class="compact-slider">
+                <span class="compact-knob"></span>
+                <span class="compact-text-estimate">مرحلة واحدة</span>
+                <span class="compact-text-precise">كل المراحل</span>
+              </span>
+            </label>
+          </div>
+        </div>
+
+        <!-- Stage Selector container (Top Right in RTL) -->
+        <div class="stage-selector-container">
+          <label for="stage-select" class="stage-select-label">المرحلة الدراسية:</label>
+          <div class="stage-select-wrapper">
+            <select id="stage-select" class="stage-select-menu">
+              <option value="stage1">المرحلة الأولى</option>
+              <option value="stage2">المرحلة الثانية</option>
+              <option value="stage3">المرحلة الثالثة</option>
+              <option value="stage4">المرحلة الرابعة</option>
+            </select>
+          </div>
         </div>
       </div>
 
@@ -122,6 +142,9 @@
           </div>
         </section>
       </div>
+
+      <!-- All Stages Container (Cumulative View) -->
+      <div class="all-stages-container" id="all-stages-container" style="display: none;"></div>
 
       <!-- Summary Dashboard -->
       <section class="summary-dashboard">
