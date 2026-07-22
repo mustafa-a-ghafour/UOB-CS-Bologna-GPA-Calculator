@@ -90,6 +90,7 @@ const gradeScale = {
 
 // Global App State
 let activeStage = "stage1";
+let isPreciseMode = false;
 let selectedGrades = {
   stage1: { semester1: {}, semester2: {} },
   stage2: { semester1: {}, semester2: {} },
@@ -106,21 +107,81 @@ function loadStateFromLocalStorage() {
   if (savedStage && curriculum[savedStage]) {
     activeStage = savedStage;
   }
+  
+  const savedPreciseMode = localStorage.getItem("bologna_gpa_precise_mode");
+  if (savedPreciseMode !== null) {
+    isPreciseMode = savedPreciseMode === "true";
+  }
 }
 
 // Save state to LocalStorage
 function saveStateToLocalStorage() {
   localStorage.setItem("bologna_gpa_active_stage", activeStage);
+  localStorage.setItem("bologna_gpa_precise_mode", isPreciseMode);
 }
 
 // Initialize UI
 document.addEventListener("DOMContentLoaded", () => {
   loadStateFromLocalStorage();
   initializeTheme();
+  setupPreciseToggle();
   renderStageSelector();
   renderStage(activeStage);
   setupThemeToggle();
 });
+
+// Precise Mode Toggle Setup
+function setupPreciseToggle() {
+  const toggle = document.getElementById("precise-toggle");
+  if (!toggle) return;
+  
+  toggle.checked = isPreciseMode;
+  document.body.classList.toggle("precise-mode-active", isPreciseMode);
+  
+  toggle.addEventListener("change", (e) => {
+    isPreciseMode = e.target.checked;
+    document.body.classList.toggle("precise-mode-active", isPreciseMode);
+    convertGradesMode(isPreciseMode);
+    saveStateToLocalStorage();
+    renderStage(activeStage);
+  });
+}
+
+// Helper to convert existing grades when switching modes
+function convertGradesMode(toPrecise) {
+  for (const stage in selectedGrades) {
+    for (const sem in selectedGrades[stage]) {
+      for (const subjectName in selectedGrades[stage][sem]) {
+        const val = selectedGrades[stage][sem][subjectName];
+        if (toPrecise) {
+          if (typeof val === "string" && gradeScale[val]) {
+            selectedGrades[stage][sem][subjectName] = gradeScale[val].avg;
+          }
+        } else {
+          if (typeof val === "number" || !isNaN(parseFloat(val))) {
+            const num = parseFloat(val);
+            const scaleKey = getGradeScaleKey(num);
+            if (scaleKey) {
+              selectedGrades[stage][sem][subjectName] = scaleKey;
+            } else {
+              delete selectedGrades[stage][sem][subjectName];
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+// Map exact grade back to estimate key
+function getGradeScaleKey(val) {
+  if (val >= 90 && val <= 100) return "امتياز";
+  if (val >= 80 && val < 90) return "جيد جداً";
+  if (val >= 70 && val < 80) return "جيد";
+  if (val >= 60 && val < 70) return "متوسط";
+  if (val >= 50 && val < 60) return "مقبول";
+  return null;
+}
 
 // Theme Management
 function initializeTheme() {
@@ -191,8 +252,9 @@ function createSubjectCard(subject, semesterKey, index) {
   const card = document.createElement("div");
   card.className = "subject-card";
   
-  const savedGrade = selectedGrades[activeStage][semesterKey][subject.name] || "";
-  if (savedGrade) {
+  const savedGrade = selectedGrades[activeStage][semesterKey][subject.name];
+  const hasGrade = savedGrade !== undefined && savedGrade !== null && savedGrade !== "";
+  if (hasGrade) {
     card.classList.add("has-grade");
   }
   
@@ -211,58 +273,103 @@ function createSubjectCard(subject, semesterKey, index) {
   infoDiv.appendChild(nameSpan);
   infoDiv.appendChild(creditsSpan);
   
-  // Create grade selection select dropdown
-  const selectWrapper = document.createElement("div");
-  selectWrapper.className = "grade-select-wrapper";
-  
-  const select = document.createElement("select");
-  select.className = "grade-select";
-  select.setAttribute("aria-label", `تقدير مادة ${subject.name}`);
-  
-  // Add placeholder option
-  const placeholderOpt = document.createElement("option");
-  placeholderOpt.value = "";
-  placeholderOpt.textContent = "اختر التقدير";
-  select.appendChild(placeholderOpt);
-  
-  // Populate grades
-  Object.keys(gradeScale).forEach(gradeKey => {
-    const scale = gradeScale[gradeKey];
-    const opt = document.createElement("option");
-    opt.value = gradeKey;
+  if (isPreciseMode) {
+    // Create numeric input wrapper
+    const inputWrapper = document.createElement("div");
+    inputWrapper.className = "grade-input-wrapper";
     
-    // Different text formatting based on conditional pass or range scale
-    if (scale.min === scale.max) {
-      opt.textContent = `${scale.name} (${scale.min})`;
-    } else {
-      opt.textContent = `${scale.name} (${scale.min}-${scale.max})`;
+    const input = document.createElement("input");
+    input.type = "number";
+    input.className = "grade-numeric-input";
+    input.placeholder = "الدرجة (50-100)";
+    input.min = "50";
+    input.max = "100";
+    input.setAttribute("aria-label", `درجة مادة ${subject.name}`);
+    
+    if (hasGrade) {
+      input.value = savedGrade;
     }
     
-    if (savedGrade === gradeKey) {
-      opt.selected = true;
-    }
+    // Real-time update and validation
+    input.addEventListener("input", (e) => {
+      let val = e.target.value;
+      if (val === "") {
+        input.classList.remove("is-invalid");
+        delete selectedGrades[activeStage][semesterKey][subject.name];
+        card.classList.remove("has-grade");
+      } else {
+        let numVal = parseFloat(val);
+        if (isNaN(numVal) || numVal < 50 || numVal > 100) {
+          input.classList.add("is-invalid");
+          delete selectedGrades[activeStage][semesterKey][subject.name];
+          card.classList.remove("has-grade");
+        } else {
+          input.classList.remove("is-invalid");
+          selectedGrades[activeStage][semesterKey][subject.name] = numVal;
+          card.classList.add("has-grade");
+        }
+      }
+      saveStateToLocalStorage();
+      calculateGPAs();
+    });
     
-    select.appendChild(opt);
-  });
-  
-  // Event listener for real-time update
-  select.addEventListener("change", (e) => {
-    const value = e.target.value;
-    if (value) {
-      selectedGrades[activeStage][semesterKey][subject.name] = value;
-      card.classList.add("has-grade");
-    } else {
-      delete selectedGrades[activeStage][semesterKey][subject.name];
-      card.classList.remove("has-grade");
-    }
+    inputWrapper.appendChild(input);
+    card.appendChild(infoDiv);
+    card.appendChild(inputWrapper);
+  } else {
+    // Create grade selection select dropdown
+    const selectWrapper = document.createElement("div");
+    selectWrapper.className = "grade-select-wrapper";
     
-    saveStateToLocalStorage();
-    calculateGPAs();
-  });
-  
-  selectWrapper.appendChild(select);
-  card.appendChild(infoDiv);
-  card.appendChild(selectWrapper);
+    const select = document.createElement("select");
+    select.className = "grade-select";
+    select.setAttribute("aria-label", `تقدير مادة ${subject.name}`);
+    
+    // Add placeholder option
+    const placeholderOpt = document.createElement("option");
+    placeholderOpt.value = "";
+    placeholderOpt.textContent = "اختر التقدير";
+    select.appendChild(placeholderOpt);
+    
+    // Populate grades
+    Object.keys(gradeScale).forEach(gradeKey => {
+      const scale = gradeScale[gradeKey];
+      const opt = document.createElement("option");
+      opt.value = gradeKey;
+      
+      // Different text formatting based on conditional pass or range scale
+      if (scale.min === scale.max) {
+        opt.textContent = `${scale.name} (${scale.min})`;
+      } else {
+        opt.textContent = `${scale.name} (${scale.min}-${scale.max})`;
+      }
+      
+      if (hasGrade && savedGrade === gradeKey) {
+        opt.selected = true;
+      }
+      
+      select.appendChild(opt);
+    });
+    
+    // Event listener for real-time update
+    select.addEventListener("change", (e) => {
+      const value = e.target.value;
+      if (value) {
+        selectedGrades[activeStage][semesterKey][subject.name] = value;
+        card.classList.add("has-grade");
+      } else {
+        delete selectedGrades[activeStage][semesterKey][subject.name];
+        card.classList.remove("has-grade");
+      }
+      
+      saveStateToLocalStorage();
+      calculateGPAs();
+    });
+    
+    selectWrapper.appendChild(select);
+    card.appendChild(infoDiv);
+    card.appendChild(selectWrapper);
+  }
   
   return card;
 }
@@ -299,13 +406,25 @@ function calculateSemesterGPA(subjects, semesterKey) {
   let gradedCredits = 0;
   
   subjects.forEach(subject => {
-    const gradeKey = selectedGrades[activeStage][semesterKey][subject.name];
-    if (gradeKey && gradeScale[gradeKey]) {
-      const scale = gradeScale[gradeKey];
-      weightedMin += scale.min * subject.credits;
-      weightedMax += scale.max * subject.credits;
-      weightedAvg += scale.avg * subject.credits;
-      gradedCredits += subject.credits;
+    const val = selectedGrades[activeStage][semesterKey][subject.name];
+    if (val !== undefined && val !== null && val !== "") {
+      if (isPreciseMode) {
+        const grade = parseFloat(val);
+        if (!isNaN(grade) && grade >= 50 && grade <= 100) {
+          weightedMin += grade * subject.credits;
+          weightedMax += grade * subject.credits;
+          weightedAvg += grade * subject.credits;
+          gradedCredits += subject.credits;
+        }
+      } else {
+        if (gradeScale[val]) {
+          const scale = gradeScale[val];
+          weightedMin += scale.min * subject.credits;
+          weightedMax += scale.max * subject.credits;
+          weightedAvg += scale.avg * subject.credits;
+          gradedCredits += subject.credits;
+        }
+      }
     }
   });
   
@@ -330,25 +449,49 @@ function calculateCumulativeGPA(stageData) {
   
   // Sem 1
   stageData.semester1.forEach(subject => {
-    const gradeKey = selectedGrades[activeStage]["semester1"][subject.name];
-    if (gradeKey && gradeScale[gradeKey]) {
-      const scale = gradeScale[gradeKey];
-      weightedMin += scale.min * subject.credits;
-      weightedMax += scale.max * subject.credits;
-      weightedAvg += scale.avg * subject.credits;
-      gradedCredits += subject.credits;
+    const val = selectedGrades[activeStage]["semester1"][subject.name];
+    if (val !== undefined && val !== null && val !== "") {
+      if (isPreciseMode) {
+        const grade = parseFloat(val);
+        if (!isNaN(grade) && grade >= 50 && grade <= 100) {
+          weightedMin += grade * subject.credits;
+          weightedMax += grade * subject.credits;
+          weightedAvg += grade * subject.credits;
+          gradedCredits += subject.credits;
+        }
+      } else {
+        if (gradeScale[val]) {
+          const scale = gradeScale[val];
+          weightedMin += scale.min * subject.credits;
+          weightedMax += scale.max * subject.credits;
+          weightedAvg += scale.avg * subject.credits;
+          gradedCredits += subject.credits;
+        }
+      }
     }
   });
   
   // Sem 2
   stageData.semester2.forEach(subject => {
-    const gradeKey = selectedGrades[activeStage]["semester2"][subject.name];
-    if (gradeKey && gradeScale[gradeKey]) {
-      const scale = gradeScale[gradeKey];
-      weightedMin += scale.min * subject.credits;
-      weightedMax += scale.max * subject.credits;
-      weightedAvg += scale.avg * subject.credits;
-      gradedCredits += subject.credits;
+    const val = selectedGrades[activeStage]["semester2"][subject.name];
+    if (val !== undefined && val !== null && val !== "") {
+      if (isPreciseMode) {
+        const grade = parseFloat(val);
+        if (!isNaN(grade) && grade >= 50 && grade <= 100) {
+          weightedMin += grade * subject.credits;
+          weightedMax += grade * subject.credits;
+          weightedAvg += grade * subject.credits;
+          gradedCredits += subject.credits;
+        }
+      } else {
+        if (gradeScale[val]) {
+          const scale = gradeScale[val];
+          weightedMin += scale.min * subject.credits;
+          weightedMax += scale.max * subject.credits;
+          weightedAvg += scale.avg * subject.credits;
+          gradedCredits += subject.credits;
+        }
+      }
     }
   });
   
@@ -378,6 +521,19 @@ function updateGPADisplay(prefix, gpaObject) {
     avgEl.textContent = gpaObject.avg;
     minEl.textContent = gpaObject.min;
     maxEl.textContent = gpaObject.max;
+  }
+  
+  // Update labels dynamically based on precise mode
+  const card = document.getElementById(prefix === "cumulative" ? "cumulative-summary-card" : `${prefix}-summary-card`);
+  if (card) {
+    const labelEl = card.querySelector(".gpa-label");
+    if (labelEl) {
+      if (isPreciseMode) {
+        labelEl.textContent = prefix === "cumulative" ? "المعدل التراكمي الدقيق" : "المعدل الدقيق";
+      } else {
+        labelEl.textContent = prefix === "cumulative" ? "المعدل التراكمي المتوسط" : "المتوسط";
+      }
+    }
   }
 }
 

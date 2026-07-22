@@ -146,6 +146,14 @@ body {
   justify-content: space-between;
   align-items: center;
   gap: 16px;
+  flex-wrap: wrap;
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
 }
 
 .logo-area {
@@ -749,6 +757,153 @@ body * {
   transition: background-color var(--transition-normal), border-color var(--transition-normal);
 }
 
+/* Precise Toggle Compact Control */
+.precise-toggle-container {
+  display: flex;
+  align-items: center;
+}
+
+.compact-toggle {
+  position: relative;
+  display: inline-block;
+  width: 130px;
+  height: 38px;
+  user-select: none;
+  cursor: pointer;
+}
+
+.compact-toggle input {
+  display: none;
+}
+
+.compact-slider {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: 30px;
+  box-shadow: var(--shadow-sm);
+  transition: all var(--transition-normal);
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+  padding: 3px;
+}
+
+.compact-toggle:hover .compact-slider {
+  background: var(--bg-card-hover);
+  border-color: var(--border-color-hover);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+.compact-toggle:active .compact-slider {
+  transform: translateY(0);
+}
+
+.compact-knob {
+  position: absolute;
+  width: 30px;
+  height: 30px;
+  background: var(--accent-gradient);
+  border-radius: 50%;
+  transition: transform var(--transition-normal);
+  z-index: 2;
+  box-shadow: 0 2px 6px rgba(99, 102, 241, 0.3);
+  right: 4px;
+}
+
+#precise-toggle:checked ~ .compact-slider .compact-knob {
+  transform: translateX(-92px);
+}
+
+.compact-text-estimate,
+.compact-text-precise {
+  position: absolute;
+  font-size: 0.8rem;
+  font-weight: 700;
+  transition: all var(--transition-normal);
+  z-index: 1;
+  width: calc(100% - 38px);
+  text-align: center;
+}
+
+.compact-text-estimate {
+  left: 6px;
+  color: var(--text-primary);
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.compact-text-precise {
+  right: 6px;
+  color: var(--text-primary);
+  opacity: 0;
+  transform: translateX(-15px);
+}
+
+#precise-toggle:checked ~ .compact-slider .compact-text-estimate {
+  opacity: 0;
+  transform: translateX(15px);
+}
+
+#precise-toggle:checked ~ .compact-slider .compact-text-precise {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+/* Precise Mode Active Layout Changes */
+.precise-mode-active .gpa-range-row {
+  display: none !important;
+}
+
+/* Grade Numeric Input Styling */
+.grade-numeric-input {
+  width: 100%;
+  padding: 10px 14px;
+  font-family: var(--font-family);
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  background-color: var(--bg-input);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  transition: all var(--transition-normal);
+  text-align: center;
+  direction: ltr; /* inputs of numbers look cleaner in LTR */
+}
+
+.grade-numeric-input:hover {
+  border-color: var(--border-color-hover);
+}
+
+.grade-numeric-input:focus {
+  outline: none;
+  border-color: var(--primary-color);
+  background-color: var(--bg-input-focus);
+  box-shadow: 0 0 0 3px var(--primary-glow);
+}
+
+.grade-numeric-input.is-invalid {
+  border-color: var(--color-danger) !important;
+  background-color: var(--color-danger-bg) !important;
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.2) !important;
+}
+
+.grade-numeric-input::placeholder {
+  font-family: var(--font-family);
+  color: var(--text-muted);
+  font-size: 0.8rem;
+}
+
+.grade-input-wrapper {
+  position: relative;
+  width: 160px;
+}
+
 /* Responsive adjustments */
 @media (max-width: 576px) {
   body {
@@ -801,7 +956,8 @@ body * {
     padding: 12px 14px;
   }
 
-  .grade-select-wrapper {
+  .grade-select-wrapper,
+  .grade-input-wrapper {
     width: 100%;
   }
 
@@ -819,5 +975,23 @@ body * {
 
   .gpa-num-small {
     font-size: 1rem;
+  }
+
+  /* Responsive compact toggle */
+  .compact-toggle {
+    width: 120px;
+    height: 36px;
+  }
+  .compact-knob {
+    width: 28px;
+    height: 28px;
+  }
+  #precise-toggle:checked ~ .compact-slider .compact-knob {
+    transform: translateX(-84px);
+  }
+  .compact-text-estimate,
+  .compact-text-precise {
+    font-size: 0.75rem;
+    width: calc(100% - 36px);
   }
 }
