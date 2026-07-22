@@ -241,14 +241,14 @@ function renderStageSelector() {
 function renderStage(stageKey) {
   const sem1List = document.getElementById("semester1-subjects");
   const sem2List = document.getElementById("semester2-subjects");
-  const semestersGrid = document.querySelector(".semesters-grid");
+  const singleStageWrapper = document.getElementById("single-stage-wrapper");
   const allStagesContainer = document.getElementById("all-stages-container");
   const selectorContainer = document.querySelector(".stage-selector-container");
   
   if (isCumulativeAllStages) {
     // Hide Stage Selector and Single Stage Grid
     if (selectorContainer) selectorContainer.style.display = "none";
-    if (semestersGrid) semestersGrid.style.display = "none";
+    if (singleStageWrapper) singleStageWrapper.style.display = "none";
     if (allStagesContainer) {
       allStagesContainer.style.display = "flex";
       allStagesContainer.innerHTML = "";
@@ -262,14 +262,19 @@ function renderStage(stageKey) {
       const s1Credits = curriculum[key].semester1.reduce((sum, s) => sum + s.credits, 0);
       const s2Credits = curriculum[key].semester2.reduce((sum, s) => sum + s.credits, 0);
       
-      const stageRow = document.createElement("div");
-      stageRow.className = "stage-row";
+      // Stage wrapper
+      const stageWrapper = document.createElement("div");
+      stageWrapper.className = "stage-wrapper-outside";
       
       // Stage title
       const stageTitle = document.createElement("h3");
-      stageTitle.className = "stage-row-title";
+      stageTitle.className = "stage-header-title-outside";
       stageTitle.textContent = stageName;
-      stageRow.appendChild(stageTitle);
+      stageWrapper.appendChild(stageTitle);
+      
+      const stageRow = document.createElement("div");
+      stageRow.className = "stage-row";
+      stageWrapper.appendChild(stageRow);
       
       // Columns grid
       const columnsGrid = document.createElement("div");
@@ -308,13 +313,13 @@ function renderStage(stageKey) {
       stageRow.appendChild(columnsGrid);
       
       if (allStagesContainer) {
-        allStagesContainer.appendChild(stageRow);
+        allStagesContainer.appendChild(stageWrapper);
       }
     }
   } else {
     // Show Stage Selector and Single Stage Grid
     if (selectorContainer) selectorContainer.style.display = "flex";
-    if (semestersGrid) semestersGrid.style.display = "";
+    if (singleStageWrapper) singleStageWrapper.style.display = "";
     if (allStagesContainer) allStagesContainer.style.display = "none";
     
     sem1List.innerHTML = "";
@@ -322,12 +327,18 @@ function renderStage(stageKey) {
     
     const stageData = curriculum[stageKey];
     if (!stageData) return;
+
+    // Update single stage title dynamically
+    const singleStageTitle = document.getElementById("single-stage-title");
+    if (singleStageTitle) {
+      singleStageTitle.textContent = stageData.name;
+    }
     
     const s1TotalCredits = stageData.semester1.reduce((sum, s) => sum + s.credits, 0);
     const s2TotalCredits = stageData.semester2.reduce((sum, s) => sum + s.credits, 0);
     
-    document.getElementById("s1-total-credits-display").textContent = getCreditsLabel(s1TotalCredits);
-    document.getElementById("s2-total-credits-display").textContent = getCreditsLabel(s2TotalCredits);
+    document.getElementById("s1-total-credits-display").textContent = `الكورس الأول (${getCreditsLabel(s1TotalCredits)})`;
+    document.getElementById("s2-total-credits-display").textContent = `الكورس الثاني (${getCreditsLabel(s2TotalCredits)})`;
     
     // Render Semester 1 subjects
     stageData.semester1.forEach((subject, index) => {

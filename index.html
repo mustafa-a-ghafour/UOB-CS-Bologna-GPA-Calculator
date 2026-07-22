@@ -112,35 +112,34 @@
         </div>
       </div>
 
-      <!-- Semester Grid -->
-      <div class="semesters-grid">
-        <!-- Semester 1 Column -->
-        <section class="semester-column" id="semester-1-section">
-          <div class="semester-header">
-            <div class="semester-title-group">
-              <span class="semester-tag">الكورس الأول</span>
-              <h3>الفصل الدراسي الأول</h3>
-            </div>
-            <span class="credits-count" id="s1-total-credits-display">0 وحدة</span>
-          </div>
-          <div class="subjects-list" id="semester1-subjects">
-            <!-- Dynamic Subjects Rendered Here -->
-          </div>
-        </section>
+      <!-- Single Stage Wrapper -->
+      <div id="single-stage-wrapper" class="stage-wrapper-outside">
+        <h3 class="stage-header-title-outside" id="single-stage-title">المرحلة الأولى</h3>
+        <!-- Single Stage Container -->
+        <div class="stage-row" id="single-stage-container">
+          <!-- Semester Grid -->
+          <div class="stage-row-columns">
+            <!-- Semester 1 Column -->
+            <section class="stage-row-column" id="semester-1-section">
+              <div class="stage-row-column-header" id="s1-total-credits-display">
+                الكورس الأول (0 وحدة)
+              </div>
+              <div class="subjects-list" id="semester1-subjects">
+                <!-- Dynamic Subjects Rendered Here -->
+              </div>
+            </section>
 
-        <!-- Semester 2 Column -->
-        <section class="semester-column" id="semester-2-section">
-          <div class="semester-header">
-            <div class="semester-title-group">
-              <span class="semester-tag">الكورس الثاني</span>
-              <h3>الفصل الدراسي الثاني</h3>
-            </div>
-            <span class="credits-count" id="s2-total-credits-display">0 وحدة</span>
+            <!-- Semester 2 Column -->
+            <section class="stage-row-column" id="semester-2-section">
+              <div class="stage-row-column-header" id="s2-total-credits-display">
+                الكورس الثاني (0 وحدة)
+              </div>
+              <div class="subjects-list" id="semester2-subjects">
+                <!-- Dynamic Subjects Rendered Here -->
+              </div>
+            </section>
           </div>
-          <div class="subjects-list" id="semester2-subjects">
-            <!-- Dynamic Subjects Rendered Here -->
-          </div>
-        </section>
+        </div>
       </div>
 
       <!-- All Stages Container (Cumulative View) -->

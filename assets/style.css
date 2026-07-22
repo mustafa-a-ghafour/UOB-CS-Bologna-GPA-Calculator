@@ -1088,9 +1088,8 @@ body * {
   .stage-row {
     padding: 16px;
   }
-  .stage-row-title {
+  .stage-header-title-outside {
     font-size: 1.1rem;
-    margin-bottom: 16px;
   }
 }
 
@@ -1111,19 +1110,23 @@ body * {
   -webkit-backdrop-filter: var(--glass-blur);
 }
 
-.stage-row-title {
+.stage-wrapper-outside {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.stage-header-title-outside {
   font-size: 1.25rem;
   font-weight: 800;
   color: var(--primary-color);
-  margin-bottom: 20px;
-  padding-bottom: 8px;
-  border-bottom: 1px dashed var(--border-color);
+  margin-bottom: 0;
   display: flex;
   align-items: center;
   gap: 8px;
 }
 
-.stage-row-title::before {
+.stage-header-title-outside::before {
   content: '';
   display: inline-block;
   width: 6px;
